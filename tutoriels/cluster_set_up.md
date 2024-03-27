@@ -1,27 +1,27 @@
 #### Mise en place d'un cluster hadoop
 Dans ce tutoriel, je vais te montré comment mettre en place un cluster de hadoop en utilisant les virtuelles machines de AWS. On va suivre ces étapes :
 
-- Mise en place de la machine virtuel
-- Disposé les informations nécessaire ainsi que les outils nécessaire
-- Définition des variables d'environnement
-- Etablir la communication entre tes differentes machines
+- Mise en place des machine virtuelle
+- Disposé les informations nécessaire ainsi que les outils nécessaires
+- Définition des variables d'environnements
+- Etablir la communication entre les differentes machines
 - Configuration du cluster
 - Démarrage
 - Vérification
 
 1. Mise en place de la machine virtuelle
-Dans ton console de AWS, tu lance une instance AWS et tu l'as personnalise. Voici les configuration nécessaire.
-- Security groupe
-Dans cette zone tu défini où et comment ton instance est accédé. Hadoop utilise le ssh, assure toi d'avoir sélectionner l'accès par le ````ssh```` qui à pour porte le numero ```22``` et que la machine puissent être accessible n'importe où. Une fois la machine lancée, généralement elle est automatiquement démarré, si elle n'est pas démarré il faut la lancer. Après l'avoir lancé connecte toi a cette machine en utilisant le ```ssh``` depuis ta machine ou en utilisant le ```EC2 connect```.  Dans le premier premier cas tu auras besoin d'une ```key-paire``` qui te sera fournie par AWS. Tu utilise cette clé pour se connecter depuis ta machine en écrivant cette commande.
+Dans ton espace utilisateur de hadoop, tu lance une instance AWS et tu l'as personnalise. Voici les configuration nécessaire.
+- Network
+Dans cette zone tu défini où et comment ton instance est accédé. Hadoop utilise le ssh, assure toi d'avoir sélectionner l'accès par le ````ssh```` qui à pour porte le numero ```22``` et que la machine puisse être accessible n'importe où. Une fois la machine lancée, généralement elle est automatiquement démarré, si elle n'est pas démarré il faut la lancer. Après l'avoir lancé connecte toi a cette machine en utilisant le ```ssh``` depuis ta machine local ou en utilisant le ```EC2 connect```.  Dans le premier premier cas tu auras besoin d'une ```key-paire``` qui te sera fournie par AWS. Tu utilise cette clé pour se connecter depuis ta machine en écrivant cette commande.
 ```zsh
 ssh -i key-paire.pem username@hostname # remplace key-paire, username, hostname par leur valeur
 ```
 Si tout ce passe bien tu sera connecté á ton instance AMI. Maintenant tu passe au deuxième étapes.
 
-1. Assurez vous de disposé les informations et logiciel suivants
+1. Assurez toi de disposé les informations et logiciel suivants
 
 - ssh
-Le protocole de communicaiton utilisé par les noeuds pour communiquer est le ssh, assuré toi que le ssh est installé sur ta machine. Pour l'installer utilise cette commande
+Le protocole de communicaiton utilisé par les noeuds pour communiquer est le ssh, assuré toi que le ssh est installé sur les machine. Pour l'installer utilise cette commande
 
 ```zsh
 sudo apt update
@@ -72,13 +72,13 @@ echo "export PATH=$JAVA_HOME/bin:$PATH"
 
 2. Etablir la communication entre tes differentes machines
 
-Premierement, il faut génére la clé sur chaque machine pour une connexion sécurisé. Pour le faire suivez ces étapes. Sur chaque machine entré
+Premierement, il faut génére la clé sur chaque machine pour une connexion sécurisé. Pour le faire suit ces étapes. Sur chaque machine entré
 
 ```zsh
 ssh-keygen -t rsa -b 4096 
 cat ~/.ssh/id_rsa.pub >> authorized_keys # sur la machine elle même
 ```
-Copiez la clé publique de la machine vers les autres machines pour leurs permettre d'avoir accès a ce dernier. Si cette partie pose problème, vous povez copier manuellement la clé publique et la partager sur les autres machine
+Copie la clé publique de la machine vers les autres machines pour leurs permettre d'avoir accès a ce dernier. Si cette partie pose problème, tu peux copier manuellement la clé publique et la partager sur les autres machine
 
 ```zsh
 ssh-copy-id user@hostname # remplacer user, et hostname par le nom du noeud
@@ -101,7 +101,7 @@ Dans ce fichier met la configuration suivant
 <configuration>
     <property>
         <name>fs.defaultFS</name>
-        <value>hdfs://master-ip-address:9000</value> <! remplacle master-ip-adress par l'adress ip du la neoud maitre>
+        <value>hdfs://master-ip-address:9000</value> <! remplace master-ip-adress par l'adress ip du la neoud maitre>
     </property>
 <configuratin>
 ```
@@ -130,7 +130,7 @@ Configuration de gestionnaire de ressource
 
 ```xml
     <configuration>
-    <!-- Emplacement du ResourceManager -->
+    <!-- assure toi de remplacer le hostmane par l'adress ip de la machine en question -->
     <property>
         <name>yarn.resourcemanager.hostname</name>
         <value>hostname</value>
@@ -149,9 +149,9 @@ Configuration de gestionnaire de ressource
     </property>
 </configuration>
 ```
-- Créer un fichiers esclaves
+- Créer un fichier esclaves
 
-Pour que la machine maitre, master node sache ou se situe les machines esclave, tu crée un fichier nommé ```workers``` dans lequel tu met les adress ip des machines esclaves en fesant ceci. Note que le fichier est créé dans le dossier ```/etc```
+Pour que la machine maitre, master node sache ou se situe les machines esclaves, tu crée un fichier nommé ```workers``` dans lequel tu met les adress ip des machines esclaves en fesant ceci. Note que le fichier est créé dans le dossier ```/etc``` de hadoop
 
 ```zsh
 sudo vim workers # L'éditeur de text va s'ouvri, la tu met les adresses ip des noeuds esclaves
